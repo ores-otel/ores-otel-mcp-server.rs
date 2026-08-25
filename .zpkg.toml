@@ -1,0 +1,31 @@
+[package]
+org = "ores-otel"
+name = "ores-otel-mcp-server"
+version = "0.1.0"
+description = "Read-only MCP diagnostics for ORES telemetry and lifecycle contracts"
+license = "MIT"
+keywords = ["mcp", "opentelemetry", "lifecycle", "diagnostics", "global-tool"]
+language = "rust"
+
+[package.repository]
+vcs = "git"
+url = "https://github.com/ores-otel/ores-otel-mcp-server.rs"
+
+[build]
+command = "cargo build --release --locked --bin ores-otel-mcp-server"
+outputs = ["target/release/ores-otel-mcp-server"]
+
+[bin]
+ores-otel-mcp-server = "target/release/ores-otel-mcp-server"
+
+[publish]
+include_readme = true
+tag_format = "v{version}"
+smoke_test = '''test -x "$ZED_PKG_TEST_TARGET/target/release/ores-otel-mcp-server" && responses=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2026-07-28","capabilities":{},"clientInfo":{"name":"zed-r2g","version":"1"}}}' '{"jsonrpc":"2.0","method":"notifications/initialized"}' '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | "$ZED_PKG_TEST_TARGET/target/release/ores-otel-mcp-server") && printf '%s\n' "$responses" | grep -q '"tools"' '''
+exclude = [".env", ".env.*", ".direnv/**", ".zed/**", ".zed-pack/**", "target/**", "tmp/**", "**/*.log", ".DS_Store"]
+
+[install]
+adapter = "none"
+
+[scripts]
+test = "cargo test --all-targets --all-features --locked"
