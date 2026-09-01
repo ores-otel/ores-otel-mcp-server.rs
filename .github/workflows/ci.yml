@@ -10,15 +10,20 @@ permissions:
 
 jobs:
   rust:
+    name: Rust ${{ matrix.rust }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: ["1.95.0", "1.97.1"]
     steps:
       - name: Check out source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install 1.88.0 --profile minimal --component clippy,rustfmt
+        run: rustup toolchain install "${{ matrix.rust }}" --profile minimal --component clippy,rustfmt
       - name: Reject credential-like tracked content
         shell: bash
         run: |
@@ -28,14 +33,16 @@ jobs:
             exit 1
           fi
       - name: Check formatting
-        run: cargo +1.88.0 fmt --all --check
+        run: rustup run "${{ matrix.rust }}" cargo fmt --all --check
       - name: Lint
-        run: cargo +1.88.0 clippy --locked --all-targets --all-features -- -D warnings
+        run: rustup run "${{ matrix.rust }}" cargo clippy --locked --all-targets --all-features -- -D warnings
       - name: Test protocol and security boundaries
-        run: cargo +1.88.0 test --locked --all-targets --all-features
+        run: rustup run "${{ matrix.rust }}" cargo test --locked --all-targets --all-features
       - name: Build release
-        run: cargo +1.88.0 build --locked --release
+        run: rustup run "${{ matrix.rust }}" cargo build --locked --release --all-features
       - name: Install pinned RustSec scanner
-        run: cargo +1.88.0 install cargo-audit --version 0.22.2 --locked
+        if: matrix.rust == '1.95.0'
+        run: rustup run "${{ matrix.rust }}" cargo install cargo-audit --version 0.22.2 --locked
       - name: Audit locked dependencies
-        run: cargo +1.88.0 audit --deny warnings
+        if: matrix.rust == '1.95.0'
+        run: rustup run "${{ matrix.rust }}" cargo audit --deny warnings

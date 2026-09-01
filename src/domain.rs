@@ -9,7 +9,7 @@ pub const REPOSITORY: &str = "ores-otel-mcp-server.rs";
 pub const DOMAIN_SUMMARY: &str = "Read-only MCP diagnostics for ORES telemetry contracts, lifecycle assurance, redaction, and fleet integration";
 pub const UNIT_LABEL: &str = "telemetry units";
 
-const REPOSITORIES: [(&str, &str); 4] = [
+const REPOSITORIES: [(&str, &str); 5] = [
     (
         "ores.otel.log",
         "canonical polyglot logging and authenticated telemetry SDKs",
@@ -26,13 +26,10 @@ const REPOSITORIES: [(&str, &str); 4] = [
         "ores-interfaces",
         "identity, authorization, request, error, and security-event contracts",
     ),
-];
-
-const READINESS_VARIABLES: [&str; 4] = [
-    "OTEL_EXPORTER_OTLP_ENDPOINT",
-    "SUPABASE_URL",
-    "SHARED_AUTH_BASE_URL",
-    "FIDUCIA_TOKEN",
+    (
+        "ores-otel-mcp-server.rs",
+        "read-only telemetry contract, provider posture, and incident diagnostics",
+    ),
 ];
 
 const DOMAIN_NOTES: [&str; 3] = [
@@ -120,16 +117,17 @@ pub fn plan(input: PlanInput) -> Result<Value, String> {
 }
 
 #[must_use]
-pub fn runtime_readiness() -> Value {
-    let variables = READINESS_VARIABLES
-        .into_iter()
-        .map(|name| json!({"name": name, "configured": std::env::var_os(name).is_some()}))
-        .collect::<Vec<_>>();
+pub fn runtime_readiness(lifecycle_audit_capacity: usize) -> Value {
     json!({
-        "configuration": variables,
+        "protocolRevision": "2025-11-25",
+        "transports": ["stdio", "streamable_http"],
+        "clients": ["cursor", "openai", "anthropic", "gemini", "grok", "qwen"],
+        "remoteAuthentication": "shared-auth OAuth 2.1 with exact issuer, audience, client, realm, scope, role, and AAL2 validation",
+        "providerTool": "organization_posture",
+        "providerStates": ["ready", "not_configured", "degraded", "unauthorized", "forbidden"],
+        "lifecycleAuditCapacity": lifecycle_audit_capacity,
         "valuesExposed": false,
-        "networkChecked": false,
-        "authenticated": false
+        "missingConfigurationMeansSuccess": false
     })
 }
 
@@ -197,9 +195,10 @@ mod tests {
 
     #[test]
     fn readiness_discloses_presence_only() {
-        let value = runtime_readiness();
+        let value = runtime_readiness(128);
         assert_eq!(value["valuesExposed"], false);
-        assert_eq!(value["networkChecked"], false);
-        assert_eq!(value["authenticated"], false);
+        assert_eq!(value["missingConfigurationMeansSuccess"], false);
+        assert_eq!(value["lifecycleAuditCapacity"], 128);
+        assert_eq!(value["protocolRevision"], "2025-11-25");
     }
 }
