@@ -1,0 +1,1108 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "organization": "ores-otel",
+    "repository": "ores-otel/ores-otel-mcp-server.rs",
+    "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+    "linearIssue": "DEN-965",
+    "serverName": "ores-otel-mcp-server",
+    "summary": "Read-only ORES OTEL signal-contract, redaction, lifecycle, SDK-compatibility, and exact infrastructure provider diagnostics."
+  },
+  "protocol": {
+    "finalRevision": "2025-11-25",
+    "transports": [
+      {
+        "kind": "stdio",
+        "enabled": true,
+        "authentication": "process_boundary",
+        "evidence": [
+          {
+            "kind": "source_test",
+            "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+            "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+            "verifiedAt": "2026-09-01T01:57:22Z"
+          }
+        ]
+      },
+      {
+        "kind": "streamable_http",
+        "enabled": true,
+        "authentication": "oauth_2_1",
+        "endpointPath": "/mcp",
+        "evidence": [
+          {
+            "kind": "source_test",
+            "reference": "src/http.rs#main",
+            "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+            "verifiedAt": "2026-09-01T01:57:22Z"
+          }
+        ]
+      }
+    ],
+    "remoteAuthorization": {
+      "authority": "shared-auth",
+      "protectedResourceMetadata": true,
+      "wwwAuthenticateChallenge": true,
+      "audienceBound": true,
+      "authorizedClientValidated": true,
+      "realmValidated": true,
+      "noTokenPassthrough": true,
+      "exactHostPolicy": true,
+      "credentialedRedirectsDisabled": true,
+      "credentialedAmbientProxyDisabled": true,
+      "requestBodyMaxBytes": 262144,
+      "responseBodyMaxBytes": 524288
+    }
+  },
+  "clients": [
+    {
+      "id": "cursor",
+      "role": "mcp_client",
+      "transports": [
+        "stdio",
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "role": "mcp_client",
+      "transports": [
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "anthropic",
+      "role": "mcp_client",
+      "transports": [
+        "stdio",
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "gemini",
+      "role": "mcp_client",
+      "transports": [
+        "stdio",
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "grok",
+      "role": "mcp_client",
+      "transports": [
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "qwen",
+      "role": "mcp_client",
+      "transports": [
+        "stdio",
+        "streamable_http"
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    }
+  ],
+  "integrations": [
+    {
+      "id": "github",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_GITHUB_TOKEN",
+        "GITHUB_TOKEN",
+        "GH_TOKEN"
+      ],
+      "allowedOrigins": [
+        "https://api.github.com"
+      ],
+      "scopes": [
+        "organization:ores-otel",
+        "repository:ores-otel-mcp-server.rs",
+        "actions:read"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_organization",
+          "mode": "read",
+          "description": "Read a bounded projection of the exact ORES OTEL GitHub organization.",
+          "organizationScope": "github.com/ores-otel",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_latest_workflow_run",
+          "mode": "read",
+          "description": "Read the latest Actions run for the exact ORES OTEL MCP repository.",
+          "organizationScope": "github.com/ores-otel/ores-otel-mcp-server.rs",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "aws",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_AWS_ACCOUNT_ID",
+        "ORE_MCP_AWS_EKS_CLUSTERS",
+        "AWS_REGION"
+      ],
+      "allowedOrigins": [
+        "aws-sdk://configured-account"
+      ],
+      "scopes": [
+        "sts:GetCallerIdentity",
+        "eks:ListClusters",
+        "account:ORE_MCP_AWS_ACCOUNT_ID"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_caller_identity",
+          "mode": "read",
+          "description": "Verify the AWS caller identity against the exact configured ORES OTEL account.",
+          "organizationScope": "AWS account ORE_MCP_AWS_ACCOUNT_ID",
+          "timeoutMs": 15000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_eks_clusters",
+          "mode": "read",
+          "description": "List only EKS clusters in the exact configured ORES OTEL allowlist.",
+          "organizationScope": "EKS clusters ORE_MCP_AWS_EKS_CLUSTERS",
+          "timeoutMs": 15000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "gcp",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_GCP_PROJECT_ID",
+        "ORE_MCP_GCP_PROJECT_NUMBER",
+        "ORE_MCP_GCP_ACCESS_TOKEN"
+      ],
+      "allowedOrigins": [
+        "https://cloudresourcemanager.googleapis.com",
+        "https://serviceusage.googleapis.com"
+      ],
+      "scopes": [
+        "resourcemanager.projects.get",
+        "serviceusage.services.list",
+        "project:ORE_MCP_GCP_PROJECT_ID"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_project",
+          "mode": "read",
+          "description": "Read metadata for the exact configured ORES OTEL Google Cloud project.",
+          "organizationScope": "GCP project ORE_MCP_GCP_PROJECT_ID",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_enabled_services",
+          "mode": "read",
+          "description": "List a bounded projection of APIs enabled for the exact ORES OTEL project number.",
+          "organizationScope": "GCP project ORE_MCP_GCP_PROJECT_NUMBER",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "supabase",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_SUPABASE_URL",
+        "ORE_MCP_SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "allowedOrigins": [
+        "https://ORE_MCP_SUPABASE_URL"
+      ],
+      "scopes": [
+        "exact-project-origin",
+        "auth.settings:read",
+        "rest.openapi:read"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_auth_settings",
+          "mode": "read",
+          "description": "Read a safe projection of the exact ORES OTEL Supabase authentication settings.",
+          "organizationScope": "Supabase origin ORE_MCP_SUPABASE_URL",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_data_api_schema",
+          "mode": "read",
+          "description": "Read bounded exposed-path metadata from the exact ORES OTEL Data API schema.",
+          "organizationScope": "Supabase origin ORE_MCP_SUPABASE_URL",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "neon",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_NEON_ORGANIZATION_ID",
+        "ORE_MCP_NEON_PROJECT_ID",
+        "ORE_MCP_NEON_API_KEY"
+      ],
+      "allowedOrigins": [
+        "https://console.neon.tech"
+      ],
+      "scopes": [
+        "projects:read",
+        "branches:read",
+        "search:ores-otel"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_projects",
+          "mode": "read",
+          "description": "List a bounded Neon project projection filtered to the ORES OTEL product name.",
+          "organizationScope": "Neon organization ORE_MCP_NEON_ORGANIZATION_ID",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_project_branches",
+          "mode": "read",
+          "description": "List safe branch state for one exact configured ORES OTEL Neon project.",
+          "organizationScope": "Neon project ORE_MCP_NEON_PROJECT_ID",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "cloudflare",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_CLOUDFLARE_ZONE",
+        "ORE_MCP_CLOUDFLARE_ZONE_ID",
+        "ORE_MCP_CLOUDFLARE_API_TOKEN"
+      ],
+      "allowedOrigins": [
+        "https://api.cloudflare.com"
+      ],
+      "scopes": [
+        "zone:ORE_MCP_CLOUDFLARE_ZONE",
+        "zone:read",
+        "dns:read-without-content"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_zone",
+          "mode": "read",
+          "description": "Read bounded metadata for the exact configured ORES OTEL Cloudflare zone.",
+          "organizationScope": "Cloudflare zone ORE_MCP_CLOUDFLARE_ZONE",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_dns_records",
+          "mode": "read",
+          "description": "Read bounded DNS metadata without returning record content or credentials.",
+          "organizationScope": "Cloudflare zone ORE_MCP_CLOUDFLARE_ZONE_ID",
+          "timeoutMs": 10000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "k8s_cluster",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_K8S_ENABLED",
+        "ORE_MCP_K8S_NAMESPACE",
+        "KUBECONFIG"
+      ],
+      "allowedOrigins": [
+        "kubeconfig://ores-otel"
+      ],
+      "scopes": [
+        "namespace:ores-otel",
+        "deployments:list",
+        "pods:list",
+        "selector:app.kubernetes.io/part-of=ores-otel"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_deployments",
+          "mode": "read",
+          "description": "List bounded deployment readiness in the exact ORES OTEL Kubernetes namespace.",
+          "organizationScope": "ORESoftware/k8s-cluster namespace ores-otel",
+          "timeoutMs": 15000,
+          "outputMaxBytes": 524288
+        },
+        {
+          "name": "read_pods",
+          "mode": "read",
+          "description": "List bounded pod readiness for the exact ORES OTEL part-of selector.",
+          "organizationScope": "namespace ores-otel selector app.kubernetes.io/part-of=ores-otel",
+          "timeoutMs": 15000,
+          "outputMaxBytes": 524288
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    },
+    {
+      "id": "nats",
+      "role": "upstream_service",
+      "implementation": {
+        "module": "src/parity.rs",
+        "symbol": "org_spec",
+        "test": "tests/stdio_integration.rs"
+      },
+      "configurationKeys": [
+        "ORE_MCP_NATS_URL"
+      ],
+      "allowedOrigins": [
+        "nats://ORE_MCP_NATS_URL"
+      ],
+      "scopes": [
+        "ores-otel.mcp.service.read.v1",
+        "ores-otel.mcp.dependencies.read.v1"
+      ],
+      "stateModel": [
+        "ready",
+        "not_configured",
+        "degraded",
+        "unauthorized",
+        "forbidden"
+      ],
+      "operations": [
+        {
+          "name": "read_service_snapshot",
+          "mode": "read",
+          "description": "Request a bounded snapshot on the exact ORES OTEL service subject.",
+          "organizationScope": "NATS subject ores-otel.mcp.service.read.v1",
+          "timeoutMs": 5000,
+          "outputMaxBytes": 131072
+        },
+        {
+          "name": "read_dependency_snapshot",
+          "mode": "read",
+          "description": "Request a bounded snapshot on the exact ORES OTEL dependency subject.",
+          "organizationScope": "NATS subject ores-otel.mcp.dependencies.read.v1",
+          "timeoutMs": 5000,
+          "outputMaxBytes": 131072
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "source_test",
+          "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+          "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+          "verifiedAt": "2026-09-01T01:57:22Z"
+        }
+      ]
+    }
+  ],
+  "organizationSurface": {
+    "repositories": [
+      "ores-otel/ores-otel-mcp-server.rs",
+      "ores-otel/ores.otel.log",
+      "ores-otel/ores-mcp-server-core-libs.rs",
+      "ores-otel/ores-lib-core",
+      "ores-otel/ores-interfaces"
+    ],
+    "services": [
+      "ores-otel-mcp-server",
+      "ores-otel-collector-plane",
+      "ores-otel-provider-plane"
+    ],
+    "kubernetesNamespaces": [
+      "ores-otel"
+    ],
+    "natsSubjects": [
+      "ores-otel.mcp.service.read.v1",
+      "ores-otel.mcp.dependencies.read.v1"
+    ],
+    "runbooks": [
+      "README.md#run",
+      "README.md#tools",
+      "README.md#configuration",
+      "README.md#security-and-observability"
+    ],
+    "tools": [
+      {
+        "name": "github_posture",
+        "description": "Read bounded organization metadata and latest workflow state from the exact ORES OTEL GitHub scope.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "aws_posture",
+        "description": "Verify the configured AWS account and list only allowlisted ORES OTEL EKS clusters with explicit failure states.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "aws"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "gcp_posture",
+        "description": "Read the exact configured Google Cloud project and bounded enabled-service state for ORES OTEL.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "gcp"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "supabase_posture",
+        "description": "Read bounded auth settings and Data API paths from one exact ORES OTEL Supabase project without accepting SQL.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "supabase"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "neon_posture",
+        "description": "Read ORES OTEL-filtered Neon projects and safe branch state while excluding connection and credential material.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "neon"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "cloudflare_posture",
+        "description": "Read the exact configured ORES OTEL Cloudflare zone and bounded DNS metadata without returning record content.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "cloudflare"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "k8s_posture",
+        "description": "Read deployment and pod readiness only in the ORES OTEL namespace on the ORESoftware Kubernetes plane.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "k8s_cluster"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "nats_posture",
+        "description": "Request bounded service and dependency snapshots over two exact ORES OTEL NATS subjects without wildcard access.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "nats"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 131072
+      },
+      {
+        "name": "organization_posture",
+        "description": "Compose all eight scoped provider reads into one bounded ORES OTEL readiness view while retaining each five-state result.",
+        "implementation": {
+          "module": "src/parity.rs",
+          "symbol": "org_spec",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github",
+          "aws",
+          "gcp",
+          "supabase",
+          "neon",
+          "cloudflare",
+          "k8s_cluster",
+          "nats"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 524288
+      },
+      {
+        "name": "ores_otel_sdk_matrix",
+        "description": "Return required Dart, Rust, and TypeScript telemetry SDK capabilities and their compatibility policy.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_sdk_matrix",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_signal_contract",
+        "description": "Return ORES telemetry redaction, correlation, cardinality, authentication, backpressure, and lifecycle invariants.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_signal_contract",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_fleet_map",
+        "description": "Return the exact ORES OTEL repositories and their SDK, core-library, interface, and MCP responsibilities.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_fleet_map",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_lifecycle_state",
+        "description": "Return the ready formal runtime state, monotonic revision, and bounded transition audit without allowing transitions.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_lifecycle_state",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "k8s_cluster"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_plan",
+        "description": "Calculate a bounded deterministic telemetry-capacity plan without exporting signals or changing provider state.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_plan",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "nats"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_runtime_readiness",
+        "description": "Return the exact protocol, transport, client, authorization, provider-state, and lifecycle configuration contract.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_runtime_readiness",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github",
+          "aws",
+          "gcp",
+          "supabase",
+          "neon",
+          "cloudflare",
+          "k8s_cluster",
+          "nats"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_safety_boundary",
+        "description": "Return the exact ORES OTEL prohibition on payload ingestion, mutation, arbitrary URLs or commands, and secret logging.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_safety_boundary",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github",
+          "aws",
+          "gcp",
+          "supabase",
+          "neon",
+          "cloudflare",
+          "k8s_cluster",
+          "nats"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      },
+      {
+        "name": "ores_otel_shared_platform",
+        "description": "Return bounded ORES OTEL context for Kubernetes, shared interfaces, migrations, Cloudflare, Supabase, and Fiducia.",
+        "implementation": {
+          "module": "src/server.rs",
+          "symbol": "ores_otel_shared_platform",
+          "test": "tests/stdio_integration.rs"
+        },
+        "integrations": [
+          "github",
+          "supabase",
+          "cloudflare",
+          "k8s_cluster"
+        ],
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchemaClosed": true,
+        "outputMaxBytes": 40960
+      }
+    ],
+    "resources": [
+      {
+        "uri": "contract://ores-otel/mcp-clients",
+        "description": "Local and remote ORES OTEL MCP client compatibility and exact Shared Auth boundaries.",
+        "mimeType": "text/markdown"
+      },
+      {
+        "uri": "contract://ores-otel/providers",
+        "description": "Five-state provider semantics and exact read-only ORES OTEL infrastructure scopes.",
+        "mimeType": "text/markdown"
+      },
+      {
+        "uri": "docs://ores-otel-signals",
+        "description": "ORES OTEL logs, metrics, traces, correlation, redaction, backpressure, and lifecycle contract.",
+        "mimeType": "text/markdown"
+      },
+      {
+        "uri": "orgmap://ores-otel",
+        "description": "Exact ORES OTEL repository ownership, deployment authority, and dependency map.",
+        "mimeType": "text/markdown"
+      },
+      {
+        "uri": "schema://ores-otel-envelope",
+        "description": "Bounded machine-readable outline of the safe ORES telemetry envelope.",
+        "mimeType": "application/json"
+      }
+    ],
+    "prompts": [
+      {
+        "name": "dependency_review",
+        "description": "Review ORES OTEL organization dependencies and provider posture without changing state.",
+        "referencedTools": [
+          "organization_posture",
+          "ores_otel_fleet_map"
+        ]
+      },
+      {
+        "name": "deploy_readiness",
+        "description": "Decide whether ORES OTEL signal contracts, lifecycle, providers, and SDK contracts have sufficient evidence to deploy.",
+        "referencedTools": [
+          "organization_posture",
+          "ores_otel_signal_contract",
+          "ores_otel_lifecycle_state",
+          "ores_otel_runtime_readiness"
+        ]
+      },
+      {
+        "name": "provider_triage",
+        "description": "Triage one ORES OTEL infrastructure dependency without mutation or credential exposure.",
+        "referencedTools": [
+          "organization_posture",
+          "github_posture",
+          "aws_posture",
+          "gcp_posture",
+          "supabase_posture",
+          "neon_posture",
+          "cloudflare_posture",
+          "k8s_posture",
+          "nats_posture"
+        ]
+      },
+      {
+        "name": "telemetry_contract_review",
+        "description": "Review ORES telemetry redaction, correlation, cardinality, SDK compatibility, and lifecycle invariants.",
+        "referencedTools": [
+          "ores_otel_signal_contract",
+          "ores_otel_sdk_matrix",
+          "ores_otel_safety_boundary"
+        ]
+      },
+      {
+        "name": "telemetry_incident_triage",
+        "description": "Triage an ORES telemetry incident through bounded lifecycle, provider, signal-contract, and safety evidence.",
+        "referencedTools": [
+          "organization_posture",
+          "ores_otel_lifecycle_state",
+          "ores_otel_signal_contract",
+          "ores_otel_runtime_readiness"
+        ]
+      }
+    ],
+    "composedReadTool": "organization_posture"
+  },
+  "security": {
+    "secretsEnvironmentOnly": true,
+    "secretValuesExcluded": true,
+    "stdoutProtocolOnly": true,
+    "boundedLowCardinalityTelemetry": true,
+    "exactOriginAllowlists": true,
+    "credentialedRedirectsDisabled": true,
+    "credentialedAmbientProxyDisabled": true,
+    "mutationGate": {
+      "defaultDenied": true,
+      "runtimeAuthorization": true,
+      "allowlistedTargets": true,
+      "dryRun": true,
+      "targetBoundConfirmation": true,
+      "idempotency": true,
+      "boundedAudit": true
+    }
+  },
+  "evidence": {
+    "repositoryTests": [
+      {
+        "kind": "source_test",
+        "reference": "tests/stdio_integration.rs#real_process_exposes_exact_augmented_catalog_without_stdout_noise",
+        "revision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+        "verifiedAt": "2026-09-01T01:57:22Z"
+      }
+    ],
+    "testOrganization": {
+      "repository": "oresoftware-test/mcp-fleet-conformance",
+      "productionRevision": "939684e7d3f162d54f0d82c9e78a88200ca47074",
+      "evidence": {
+        "kind": "test_org_run",
+        "reference": "https://github.com/oresoftware-test/mcp-fleet-conformance/actions/runs/33459975400",
+        "revision": "0969c9bb7f98a87884716a1340d6a2584e27f93e",
+        "verifiedAt": "2026-09-01T01:57:22Z"
+      }
+    },
+    "sharedLibraryRevision": "7db434c7849ad153342e0daaac8a8f6f1d2dea5e",
+    "lockfileCommitted": true
+  }
+}
