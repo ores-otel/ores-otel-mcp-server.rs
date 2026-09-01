@@ -2,16 +2,26 @@
 name = "ores-otel-mcp-server"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.95.0"
 description = "Read-only MCP diagnostics for ORES telemetry contracts, lifecycle assurance, redaction, and fleet integration"
 license = "MIT"
 repository = "https://github.com/ores-otel/ores-otel-mcp-server.rs"
 readme = "README.md"
 
+[[bin]]
+name = "ores-otel-mcp-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "ores-otel-mcp-http"
+path = "src/http.rs"
+
 [dependencies]
 anyhow = "=1.0.104"
-ores-mcp-server-core-libs = { git = "https://github.com/ores-otel/ores-mcp-server-core-libs.rs", rev = "c6101656c8227251d1dbd61df54f03a186b42ade" }
-rmcp = { version = "=3.1.4", default-features = false, features = ["macros", "schemars", "server", "transport-io"] }
+flags2env = { git = "https://github.com/ORESoftware/flags-2-env.git", rev = "377bff1a4e7424eb98377997a232ddc0fc700f59" }
+ore-mcp-org-server = { git = "https://github.com/ORESoftware/mcp-rust-libs", rev = "7db434c7849ad153342e0daaac8a8f6f1d2dea5e" }
+ores-mcp-server-core-libs = { git = "https://github.com/ores-otel/ores-mcp-server-core-libs.rs", rev = "e559a76f869c2c2d9bf939b510d358a3924abd81" }
+rmcp = { version = "2.2", default-features = false, features = ["macros", "schemars", "server", "transport-io"] }
 schemars = "=1.0.4"
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.145"

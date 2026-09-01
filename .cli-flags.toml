@@ -1,0 +1,19 @@
+# stdout belongs exclusively to MCP JSON-RPC. Operational CLI diagnostics are
+# emitted on stderr and credentials remain environment-only.
+
+[help]
+url = "https://github.com/ores-otel/ores-otel-mcp-server.rs"
+columns = ["options", "env", "type", "description"]
+
+[parse]
+allow_unknown = false
+
+[env]
+load = false
+
+[flags.lifecycle-audit-capacity]
+env = "ORES_OTEL_MCP_AUDIT_CAPACITY"
+aliases = ["lifecycle-audit-capacity"]
+type = "integer"
+default = 128
+help = "Bounded number of formal MCP lifecycle transition records retained in memory (8-4096)."
