@@ -22,7 +22,7 @@ jobs:
           toolchain: 1.95.0
       # Both peer schema lanes validate the actual augmented telemetry server.
       # Test subprocesses inherit no credentials or collector configuration.
-      - uses: ORESoftware/org-mcp-server-template.rs/.github/actions/mcp-contracts@5259fd409062e93862da914b34e7bc75f0fd20c7
+      - uses: ORESoftware/org-mcp-server-template.rs/.github/actions/mcp-contracts@1435a315c14259db6ad97492e88b373d4b5acbed
         with:
           binary: ores-otel-mcp-server
           profile: fleet-v2
