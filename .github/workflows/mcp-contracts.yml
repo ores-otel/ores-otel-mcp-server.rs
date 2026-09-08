@@ -23,7 +23,7 @@ jobs:
       # Both peer schema lanes validate the actual augmented telemetry server.
       # Test subprocesses inherit no credentials or collector configuration.
       # DEN-3828: strict wire JSON, pinned shared parser bytes, and current-run evidence.
-      - uses: ORESoftware/org-mcp-server-template.rs/.github/actions/mcp-contracts@2c1bcb5bf156f21da00ca914782a547c4635fe8f
+      - uses: ORESoftware/org-mcp-server-template.rs/.github/actions/mcp-contracts@a1648e79ce7e8fcadbcc1a822a71d2c43b44a039
         with:
           binary: ores-otel-mcp-server
           profile: fleet-v2
