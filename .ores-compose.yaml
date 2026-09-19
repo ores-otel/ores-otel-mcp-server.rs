@@ -1,10 +1,10 @@
 schema_version: ores.compose.v1
-project: ores-otel-mcp-server.rs
+project: ores-otel-mcp-server
 allow_lazy_start: false
 
 services:
-  ores-otel-mcp-server.rs:
-    name: ores-otel-mcp-server.rs
+  ores-otel-mcp-server:
+    name: ores-otel-mcp-server
     runtime: host
     build:
       - ["cargo", "build", "--bins"]
