@@ -1,0 +1,11 @@
+schema_version: ores.compose.v1
+project: ores-otel-mcp-server
+allow_lazy_start: false
+
+services:
+  ores-otel-mcp-server:
+    name: ores-otel-mcp-server
+    runtime: host
+    build:
+      - ["cargo", "build", "--bins"]
+    command: ["./target/debug/ores-otel-mcp-server.rs"]
