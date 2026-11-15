@@ -23,10 +23,24 @@ jobs:
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-      - name: Test security floor gate
-        run: python3 -m unittest discover -s tests -p 'test_dependency_floor_gate.py'
+      - name: Install pinned Rust checker toolchain
+        run: rustup toolchain install "1.95.0" --profile minimal --component rustfmt
+      - name: Format-check Rust security source
+        run: rustup run "1.95.0" rustfmt --check scripts/check_dependency_floors.rs
+      - name: Run Rust dependency-floor mutation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup run "1.95.0" rustc --edition=2021 -D warnings --test scripts/check_dependency_floors.rs -o "${RUNNER_TEMP}/dependency-floor-tests"
+          "${RUNNER_TEMP}/dependency-floor-tests"
+      - name: Validate complete Cargo resolution
+        run: rustup run "1.95.0" cargo metadata --locked --format-version 1 > /dev/null
       - name: Fail closed on known vulnerable lockfile versions
-        run: python3 scripts/check_dependency_floors.py Cargo.lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup run "1.95.0" rustc --edition=2021 -D warnings scripts/check_dependency_floors.rs -o "${RUNNER_TEMP}/dependency-floor-check"
+          "${RUNNER_TEMP}/dependency-floor-check" Cargo.lock
   rust:
     name: Rust ${{ matrix.rust }}
     runs-on: ubuntu-latest
