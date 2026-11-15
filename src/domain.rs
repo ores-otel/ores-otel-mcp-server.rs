@@ -103,6 +103,10 @@ pub fn plan(input: PlanInput) -> Result<Value, String> {
         .units
         .checked_mul(lanes)
         .ok_or_else(|| "planned capacity overflowed".to_string())?;
+    let redundant_capacity = input
+        .units
+        .checked_mul(u32::from(input.redundancy))
+        .ok_or_else(|| "redundant capacity overflowed".to_string())?;
     Ok(json!({
         "workload": input.workload.as_str(),
         "units": input.units,
@@ -110,6 +114,8 @@ pub fn plan(input: PlanInput) -> Result<Value, String> {
         "redundancy": input.redundancy,
         "lanes": lanes,
         "plannedCapacity": planned_capacity,
+        "primaryCapacity": input.units,
+        "redundantCapacity": redundant_capacity,
         "advisoryOnly": true,
         "executed": false,
         "mutated": false
@@ -169,6 +175,8 @@ mod tests {
         .expect("closed valid plan");
         let output = plan(input).expect("valid plan");
         assert_eq!(output["plannedCapacity"], 21);
+        assert_eq!(output["primaryCapacity"], 7);
+        assert_eq!(output["redundantCapacity"], 14);
         assert_eq!(output["executed"], false);
         assert_eq!(output["mutated"], false);
     }
@@ -191,6 +199,27 @@ mod tests {
         }))
         .expect("serde intentionally delegates numeric bounds");
         assert!(plan(too_large).is_err());
+    }
+
+    #[test]
+    fn capacity_breakdown_preserves_exact_extremes_without_side_effects() {
+        for (units, redundancy, primary, redundant, total) in [
+            (1, 0, 1, 0, 1),
+            (100_000, 0, 100_000, 0, 100_000),
+            (100_000, 5, 100_000, 500_000, 600_000),
+        ] {
+            let value = plan(PlanInput {
+                workload: Workload::FleetIntegration,
+                units,
+                redundancy,
+            })
+            .expect("bounded input");
+            assert_eq!(value["primaryCapacity"], primary);
+            assert_eq!(value["redundantCapacity"], redundant);
+            assert_eq!(value["plannedCapacity"], total);
+            assert_eq!(value["executed"], false);
+            assert_eq!(value["mutated"], false);
+        }
     }
 
     #[test]

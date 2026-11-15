@@ -58,7 +58,7 @@ The ORES OTEL domain layer contributes eight additional read-only tools:
 
 - `ores_otel_fleet_map` — exact telemetry repositories and component responsibilities.
 - `ores_otel_lifecycle_state` — current formal lifecycle state, monotonic revision, and bounded transition audit.
-- `ores_otel_plan` — deterministic telemetry-capacity planning from a closed workload enum and bounded numeric inputs; it never executes the plan.
+- `ores_otel_plan` — deterministic telemetry-capacity planning from a closed workload enum and bounded numeric inputs; returns additive primary, redundant and total capacity fields; it never executes the plan.
 - `ores_otel_runtime_readiness` — exact protocol, transport, client, Shared Auth, provider-state, and lifecycle configuration.
 - `ores_otel_safety_boundary` — explicit prohibited mutation, arbitrary-command, arbitrary-URL, payload, credential, and secret surfaces.
 - `ores_otel_sdk_matrix` — required Dart, Rust, and TypeScript SDK capabilities and compatibility policy.
