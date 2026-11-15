@@ -176,7 +176,13 @@ mod tests {
     #[test]
     fn rejects_wrong_numeric_types_and_integer_overflow() {
         for field in ["batch_bytes", "attribute_count", "attribute_bytes"] {
-            for invalid in [json!(-1), json!(1.5), json!("1"), Value::Null, json!(u64::MAX)] {
+            for invalid in [
+                json!(-1),
+                json!(1.5),
+                json!("1"),
+                Value::Null,
+                json!(u64::MAX),
+            ] {
                 let mut candidate = json!({
                     "signal": "logs",
                     "batch_bytes": 100,
