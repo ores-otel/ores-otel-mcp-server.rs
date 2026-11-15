@@ -57,6 +57,10 @@ async fn real_process_exposes_exact_augmented_catalog_without_stdout_noise() {
                 r#"{"jsonrpc":"2.0","id":4,"method":"prompts/list","params":{}}"#,
                 "\n",
                 r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"organization_posture","arguments":{}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"traces","batch_bytes":512,"attribute_count":2,"attribute_bytes":50}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"logs","batch_bytes":512,"attribute_count":2,"attribute_bytes":50,"payload":"never-log-this"}}}"#,
                 "\n"
             )
             .as_bytes(),
@@ -231,6 +235,25 @@ async fn real_process_exposes_exact_augmented_catalog_without_stdout_noise() {
             .iter()
             .all(|provider| provider["state"] == "not_configured")
     }));
+
+    let admitted_text = response(6)
+        .pointer("/result/content/0/text")
+        .and_then(Value::as_str)
+        .expect("preflight response text");
+    let admitted: Value = serde_json::from_str(admitted_text).expect("preflight receipt JSON");
+    assert_eq!(admitted["signal"], "traces");
+    assert_eq!(admitted["admitted"], true);
+    assert_eq!(admitted["executed"], false);
+    assert_eq!(admitted["exported"], false);
+
+    let rejected = response(7);
+    assert!(
+        rejected.get("error").is_some()
+            || rejected.pointer("/result/isError") == Some(&Value::Bool(true)),
+        "unknown payload field must fail closed: {rejected}"
+    );
+    assert!(!stdout.contains("never-log-this"));
+    assert!(!String::from_utf8_lossy(&output.stderr).contains("never-log-this"));
 }
 
 #[test]
