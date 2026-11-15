@@ -152,12 +152,14 @@ mod tests {
             candidate[field] = json!("opaque-secret");
             assert!(serde_json::from_value::<PreflightInput>(candidate).is_err());
         }
-        assert!(serde_json::from_value::<PreflightInput>(json!({
-            "signal": "unknown",
-            "batch_bytes": 100,
-            "attribute_count": 0,
-            "attribute_bytes": 0
-        }))
-        .is_err());
+        assert!(
+            serde_json::from_value::<PreflightInput>(json!({
+                "signal": "unknown",
+                "batch_bytes": 100,
+                "attribute_count": 0,
+                "attribute_bytes": 0
+            }))
+            .is_err()
+        );
     }
 }
