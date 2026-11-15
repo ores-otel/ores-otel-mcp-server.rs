@@ -61,6 +61,14 @@ async fn real_process_exposes_exact_augmented_catalog_without_stdout_noise() {
                 r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"traces","batch_bytes":512,"attribute_count":2,"attribute_bytes":50}}}"#,
                 "\n",
                 r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"logs","batch_bytes":512,"attribute_count":2,"attribute_bytes":50,"payload":"never-log-this"}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"metrics","batch_bytes":512,"attribute_count":0,"attribute_bytes":50}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"metrics","batch_bytes":1,"attribute_count":0,"attribute_bytes":0}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"traces","batch_bytes":1048577,"attribute_count":0,"attribute_bytes":0}}}"#,
+                "\n",
+                r#"{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"ores_otel_admission_preflight","arguments":{"signal":"logs","batch_bytes":1,"attribute_count":0,"attribute_bytes":0,"authorization":"opaque-token-do-not-log"}}}"#,
                 "\n"
             )
             .as_bytes(),
@@ -242,18 +250,36 @@ async fn real_process_exposes_exact_augmented_catalog_without_stdout_noise() {
         .expect("preflight response text");
     let admitted: Value = serde_json::from_str(admitted_text).expect("preflight receipt JSON");
     assert_eq!(admitted["signal"], "traces");
-    assert_eq!(admitted["admitted"], true);
+    assert_eq!(admitted["withinLimits"], true);
+    assert_eq!(admitted["admitted"], false);
     assert_eq!(admitted["executed"], false);
     assert_eq!(admitted["exported"], false);
 
-    let rejected = response(7);
-    assert!(
-        rejected.get("error").is_some()
-            || rejected.pointer("/result/isError") == Some(&Value::Bool(true)),
-        "unknown payload field must fail closed: {rejected}"
-    );
-    assert!(!stdout.contains("never-log-this"));
-    assert!(!String::from_utf8_lossy(&output.stderr).contains("never-log-this"));
+    for id in [7, 8, 10, 11] {
+        let rejected = response(id);
+        assert!(
+            rejected.get("error").is_some()
+                || rejected.pointer("/result/isError") == Some(&Value::Bool(true)),
+            "metadata-only preflight must reject invalid request {id}: {rejected}"
+        );
+    }
+    let minimal_text = response(9)
+        .pointer("/result/content/0/text")
+        .and_then(Value::as_str)
+        .expect("minimal preflight response text");
+    let minimal: Value = serde_json::from_str(minimal_text).expect("minimal receipt JSON");
+    assert_eq!(minimal["withinLimits"], true);
+    assert_eq!(minimal["admitted"], false);
+    assert_eq!(minimal["attributeCount"], 0);
+    assert_eq!(minimal["attributeBytes"], 0);
+
+    for leaked in ["never-log-this", "opaque-token-do-not-log"] {
+        assert!(!stdout.contains(leaked), "secret echoed to protocol output");
+        assert!(
+            !String::from_utf8_lossy(&output.stderr).contains(leaked),
+            "secret echoed to diagnostic output"
+        );
+    }
 }
 
 #[test]
