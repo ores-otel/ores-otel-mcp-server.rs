@@ -143,6 +143,7 @@ async fn real_process_exposes_exact_augmented_catalog_without_stdout_noise() {
             "k8s_posture",
             "nats_posture",
             "neon_posture",
+            "ores_otel_admission_preflight",
             "ores_otel_fleet_map",
             "ores_otel_lifecycle_state",
             "ores_otel_plan",
