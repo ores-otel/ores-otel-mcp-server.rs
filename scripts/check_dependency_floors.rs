@@ -51,7 +51,7 @@ fn toml_literal(line: &str, key: &str) -> Result<String, String> {
         .strip_prefix('"')
         .and_then(|v| v.strip_suffix('"'))
         .ok_or_else(|| format!("{key} must be a quoted literal"))?;
-    if quoted.is_empty() || quoted.contains(['"', '\\', '\n', '\r']) {
+    if quoted.is_empty() || quoted.chars().any(|ch| matches!(ch, '"' | '\\' | '\n' | '\r')) {
         return Err(format!("{key} must be a nonempty plain literal"));
     }
     Ok(quoted.to_owned())
