@@ -33,7 +33,7 @@ impl TelemetrySignal {
 #[serde(deny_unknown_fields)]
 pub struct PreflightInput {
     pub signal: TelemetrySignal,
-    #[schemars(range(min = 1, max = 1048576))]
+    #[schemars(range(min = 1, max = 1_048_576))]
     pub batch_bytes: u32,
     #[schemars(range(min = 0, max = 64))]
     pub attribute_count: u16,
