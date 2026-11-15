@@ -9,6 +9,38 @@ permissions:
   contents: read
 
 jobs:
+  dependency_floors:
+    name: Known RustSec dependency floors
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Install pinned Rust checker toolchain
+        run: rustup toolchain install "1.95.0" --profile minimal --component rustfmt
+      - name: Format-check Rust security source
+        run: rustup run "1.95.0" rustfmt --check scripts/check_dependency_floors.rs
+      - name: Run Rust dependency-floor mutation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup run "1.95.0" rustc --edition=2021 -D warnings --test scripts/check_dependency_floors.rs -o "${RUNNER_TEMP}/dependency-floor-tests"
+          "${RUNNER_TEMP}/dependency-floor-tests"
+      - name: Validate complete Cargo resolution
+        run: rustup run "1.95.0" cargo metadata --locked --format-version 1 > /dev/null
+      - name: Fail closed on known vulnerable lockfile versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup run "1.95.0" rustc --edition=2021 -D warnings scripts/check_dependency_floors.rs -o "${RUNNER_TEMP}/dependency-floor-check"
+          "${RUNNER_TEMP}/dependency-floor-check" Cargo.lock
   rust:
     name: Rust ${{ matrix.rust }}
     runs-on: ubuntu-latest
@@ -18,10 +50,15 @@ jobs:
       matrix:
         rust: ["1.95.0", "1.97.1"]
     steps:
-      - name: Check out source
+      - name: Check out exact source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Verify exact source revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - name: Install pinned Rust toolchain
         run: rustup toolchain install "${{ matrix.rust }}" --profile minimal --component clippy,rustfmt
       - name: Reject credential-like tracked content
