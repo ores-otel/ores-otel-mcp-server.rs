@@ -24,6 +24,7 @@ use crate::{
     domain::{self, PlanInput},
     flags::RuntimeConfig,
     knowledge,
+    preflight::{self, PreflightInput},
 };
 
 pub const SERVER_NAME: &str = "ores-otel-mcp-server";
@@ -105,6 +106,24 @@ impl ORESOTELMCPServer {
     fn ores_otel_plan(&self, Parameters(input): Parameters<PlanInput>) -> Result<String, String> {
         let timer = self.metrics.start(ToolClass::Details);
         let result = domain::plan(input).and_then(|value| render(&value));
+        timer.finish(if result.is_ok() {
+            ToolOutcome::Ok
+        } else {
+            ToolOutcome::Rejected
+        });
+        result
+    }
+
+    #[tool(
+        description = "Preflight bounded telemetry signal metadata only: numeric batch size, attribute count, and attribute-byte budget. Never accepts payloads or executes an export."
+    )]
+    #[tracing::instrument(name = "mcp.tool", skip_all, fields(mcp.tool.name = "ores_otel_admission_preflight", mcp.tool.class = "details"))]
+    fn ores_otel_admission_preflight(
+        &self,
+        Parameters(input): Parameters<PreflightInput>,
+    ) -> Result<String, String> {
+        let timer = self.metrics.start(ToolClass::Details);
+        let result = preflight::preflight(input).and_then(|value| render(&value));
         timer.finish(if result.is_ok() {
             ToolOutcome::Ok
         } else {
@@ -335,6 +354,7 @@ mod tests {
         assert_eq!(
             names,
             [
+                "ores_otel_admission_preflight",
                 "ores_otel_fleet_map",
                 "ores_otel_lifecycle_state",
                 "ores_otel_plan",

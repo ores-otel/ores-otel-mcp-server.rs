@@ -54,8 +54,9 @@ Every provider result has exactly one honest state: `ready`, `not_configured`,
 reported as success. `organization_posture` composes all eight providers while
 retaining each provider's individual evidence and state.
 
-The ORES OTEL domain layer contributes eight additional read-only tools:
+The ORES OTEL domain layer contributes nine additional read-only tools:
 
+- `ores_otel_admission_preflight` — bounded metadata-only signal budget check; rejects unknown fields, payloads, inconsistent attribute count/byte metadata and out-of-range numeric values, without reserving transport capacity or exporting data. Successful checks return `withinLimits: true` but `admitted: false`, `executed: false`, and `exported: false`; only an actual downstream admission operation may claim admission.
 - `ores_otel_fleet_map` — exact telemetry repositories and component responsibilities.
 - `ores_otel_lifecycle_state` — current formal lifecycle state, monotonic revision, and bounded transition audit.
 - `ores_otel_plan` — deterministic telemetry-capacity planning from a closed workload enum and bounded numeric inputs; it never executes the plan.
