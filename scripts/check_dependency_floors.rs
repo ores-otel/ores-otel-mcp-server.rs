@@ -4,12 +4,7 @@
 //! CI first runs cargo metadata --locked to validate the complete Cargo format
 //! and dependency graph; this guard then checks every locked copy of a crate.
 
-use std::{
-    collections::BTreeSet,
-    env, fs,
-    path::Path,
-    process::ExitCode,
-};
+use std::{collections::BTreeSet, env, fs, path::Path, process::ExitCode};
 
 const MAX_LOCK_BYTES: usize = 32 * 1024 * 1024;
 
@@ -30,7 +25,10 @@ impl Version {
         }
         let numbers = parts
             .iter()
-            .map(|part| part.parse::<u64>().map_err(|_| "version integer overflow".to_owned()))
+            .map(|part| {
+                part.parse::<u64>()
+                    .map_err(|_| "version integer overflow".to_owned())
+            })
             .collect::<Result<Vec<_>, _>>()?;
         Ok(Self(numbers[0], numbers[1], numbers[2]))
     }
@@ -51,7 +49,11 @@ fn toml_literal(line: &str, key: &str) -> Result<String, String> {
         .strip_prefix('"')
         .and_then(|v| v.strip_suffix('"'))
         .ok_or_else(|| format!("{key} must be a quoted literal"))?;
-    if quoted.is_empty() || quoted.chars().any(|ch| matches!(ch, '"' | '\\' | '\n' | '\r')) {
+    if quoted.is_empty()
+        || quoted
+            .chars()
+            .any(|ch| matches!(ch, '"' | '\\' | '\n' | '\r'))
+    {
         return Err(format!("{key} must be a nonempty plain literal"));
     }
     Ok(quoted.to_owned())
@@ -93,7 +95,11 @@ fn package_identities(lock: &str) -> Result<Vec<(String, String)>, String> {
             finish_package(current.take(), &mut packages)?;
         } else if let Some(package) = current.as_mut() {
             if line.starts_with("name =") {
-                if package.name.replace(toml_literal(line, "name =")?).is_some() {
+                if package
+                    .name
+                    .replace(toml_literal(line, "name =")?)
+                    .is_some()
+                {
                     return Err(format!("line {}: duplicate package.name", i + 1));
                 }
             } else if line.starts_with("version =") {
@@ -129,8 +135,14 @@ fn floor_errors(packages: &[(String, String)]) -> Vec<String> {
         }
         let relevant = matches!(
             name.as_str(),
-            "rmcp" | "quinn-proto" | "quinn-udp" | "rustls"
-                | "rustls-webpki" | "webpki-roots" | "pin-utils" | "tokio"
+            "rmcp"
+                | "quinn-proto"
+                | "quinn-udp"
+                | "rustls"
+                | "rustls-webpki"
+                | "webpki-roots"
+                | "pin-utils"
+                | "tokio"
         );
         if !relevant {
             continue;
@@ -170,10 +182,14 @@ fn floor_errors(packages: &[(String, String)]) -> Vec<String> {
                 errors.push(format!("webpki-roots@{version}: requires >=1.0.10 on 1.x"));
             }
             "pin-utils" => {
-                errors.push(format!("pin-utils@{version}: unmaintained; remove dependency"));
+                errors.push(format!(
+                    "pin-utils@{version}: unmaintained; remove dependency"
+                ));
             }
             "tokio" if parsed <= Version(1, 47, 1) => {
-                errors.push(format!("tokio@{version}: affected I/O safety baseline; re-audit"));
+                errors.push(format!(
+                    "tokio@{version}: affected I/O safety baseline; re-audit"
+                ));
             }
             _ => {}
         }
@@ -267,7 +283,13 @@ mod tests {
         let mut rows = CLEAN.to_vec();
         rows.extend([("rmcp", "2.2.0"), ("rmcp", "3.1.4")]);
         let violations = scan(&fixture(&rows)).unwrap();
-        assert_eq!(violations.iter().filter(|v| v.contains("requires >= 3.9.0")).count(), 2);
+        assert_eq!(
+            violations
+                .iter()
+                .filter(|v| v.contains("requires >= 3.9.0"))
+                .count(),
+            2
+        );
     }
 
     #[test]
@@ -288,10 +310,14 @@ mod tests {
     #[test]
     fn rejects_quinn_udp_patch_gap() {
         for value in ["0.5.15", "0.6.0", "0.6.1", "0.6.2"] {
-            assert!(!scan(&fixture(&[("rmcp", "3.9.0"), ("quinn-udp", value)])).unwrap().is_empty());
+            assert!(!scan(&fixture(&[("rmcp", "3.9.0"), ("quinn-udp", value)]))
+                .unwrap()
+                .is_empty());
         }
         for value in ["0.5.16", "0.6.3"] {
-            assert!(scan(&fixture(&[("rmcp", "3.9.0"), ("quinn-udp", value)])).unwrap().is_empty());
+            assert!(scan(&fixture(&[("rmcp", "3.9.0"), ("quinn-udp", value)]))
+                .unwrap()
+                .is_empty());
         }
     }
 
@@ -305,14 +331,25 @@ mod tests {
 
     #[test]
     fn rejects_missing_or_malformed_package_records() {
-        for text in ["", "version = 4\n", "[[package]]\nname = \"rmcp\"", "[[package]]\nversion = \"3.9.0\""] {
+        for text in [
+            "",
+            "version = 4\n",
+            "[[package]]\nname = \"rmcp\"",
+            "[[package]]\nversion = \"3.9.0\"",
+        ] {
             assert!(scan(text).is_err(), "accepted malformed {text:?}");
         }
     }
 
     #[test]
     fn rejects_prerelease_and_numeric_overflow() {
-        for version in ["3.9.0-beta.1", "3.9.0+build", "3.9", "3.9.0.1", "3.9.18446744073709551616"] {
+        for version in [
+            "3.9.0-beta.1",
+            "3.9.0+build",
+            "3.9",
+            "3.9.0.1",
+            "3.9.18446744073709551616",
+        ] {
             assert!(!scan(&fixture(&[("rmcp", version)])).unwrap().is_empty());
         }
     }
@@ -332,9 +369,11 @@ mod tests {
 
     #[test]
     fn allows_old_zero_x_root_store_branch() {
-        assert!(scan(&fixture(&[("rmcp", "3.9.0"), ("webpki-roots", "0.26.11")]))
-            .unwrap()
-            .is_empty());
+        assert!(
+            scan(&fixture(&[("rmcp", "3.9.0"), ("webpki-roots", "0.26.11")]))
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[test]
