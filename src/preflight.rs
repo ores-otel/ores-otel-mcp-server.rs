@@ -46,7 +46,7 @@ pub struct PreflightInput {
 /// # Errors
 ///
 /// Rejects empty or oversized batches, cardinality and attribute-budget
-/// violations, and attribute bytes exceeding the claimed batch size.
+/// violations, attribute bytes exceeding the claimed batch size, or internally\n/// inconsistent attribute metadata. This does not reserve transport capacity.
 pub fn preflight(input: PreflightInput) -> Result<Value, String> {
     if input.batch_bytes == 0 || input.batch_bytes > MAX_BATCH_BYTES {
         return Err("batch_bytes must be between 1 and 1048576".to_owned());
@@ -60,9 +60,15 @@ pub fn preflight(input: PreflightInput) -> Result<Value, String> {
     if input.attribute_bytes > input.batch_bytes {
         return Err("attribute_bytes must not exceed batch_bytes".to_owned());
     }
+    if (input.attribute_count == 0) != (input.attribute_bytes == 0) {
+        return Err(
+            "attribute_count and attribute_bytes must both be zero or both nonzero".to_owned(),
+        );
+    }
     Ok(json!({
         "signal": input.signal.as_str(),
-        "admitted": true,
+        "withinLimits": true,
+        "admitted": false,
         "batchBytes": input.batch_bytes,
         "attributeCount": input.attribute_count,
         "attributeBytes": input.attribute_bytes,
@@ -99,7 +105,8 @@ mod tests {
             })))
             .expect("bounded preflight");
             assert_eq!(receipt["signal"], signal);
-            assert_eq!(receipt["admitted"], true);
+            assert_eq!(receipt["withinLimits"], true);
+            assert_eq!(receipt["admitted"], false);
             assert_eq!(receipt["admissionOnly"], true);
             assert_eq!(receipt["executed"], false);
             assert_eq!(receipt["exported"], false);
@@ -137,6 +144,51 @@ mod tests {
                 })))
                 .is_err()
             );
+        }
+    }
+
+    #[test]
+    fn rejects_inconsistent_attribute_count_and_byte_metadata() {
+        for (count, bytes) in [(0, 1), (1, 0)] {
+            assert!(
+                preflight(input(json!({
+                    "signal": "metrics",
+                    "batch_bytes": 100,
+                    "attribute_count": count,
+                    "attribute_bytes": bytes
+                })))
+                .is_err()
+            );
+        }
+        let receipt = preflight(input(json!({
+            "signal": "logs",
+            "batch_bytes": 1,
+            "attribute_count": 0,
+            "attribute_bytes": 0
+        })))
+        .expect("zero attributes must be a valid metadata-only input");
+        assert_eq!(receipt["withinLimits"], true);
+        assert_eq!(receipt["admitted"], false);
+        assert_eq!(receipt["executed"], false);
+        assert_eq!(receipt["exported"], false);
+    }
+
+    #[test]
+    fn rejects_wrong_numeric_types_and_integer_overflow() {
+        for field in ["batch_bytes", "attribute_count", "attribute_bytes"] {
+            for invalid in [json!(-1), json!(1.5), json!("1"), Value::Null, json!(u64::MAX)] {
+                let mut candidate = json!({
+                    "signal": "logs",
+                    "batch_bytes": 100,
+                    "attribute_count": 1,
+                    "attribute_bytes": 1
+                });
+                candidate[field] = invalid;
+                assert!(
+                    serde_json::from_value::<PreflightInput>(candidate).is_err(),
+                    "{field} must be a bounded unsigned integer"
+                );
+            }
         }
     }
 
